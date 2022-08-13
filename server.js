@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 
 app.get('/',(req,res)=>{
-    res.send("something")
+    res.render('login.ejs');
 })
 
 const PORT = process.env.PORT || 3000;
