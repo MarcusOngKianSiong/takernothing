@@ -2,8 +2,11 @@ const express = require("express");
 const app = express();
 const authentication = require('./models/authentication.js');
 
+app.use('/login',authentication);
 
-app.get('/',authentication);
+app.get('/',(req,res)=>{
+    res.render('login.ejs');
+});
 
 
 const PORT = process.env.PORT || 3000;
