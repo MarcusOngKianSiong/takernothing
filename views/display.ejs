@@ -11,12 +11,12 @@
         <form action="/logout" method="get">
             <input type="submit" value="logout">
         </form>
-        <form action="newNote" method="POST">
-            <input type="submit">
-        </form>
-        <div>
-
-        </div>
+        <input type="button" class="addNewNote" value="+">
+        <ul class="noteList">
+            <%list.forEach((note)=>{%>
+                <li><input type="button" class="openNote" value="<%=note.identificationNumber%>"><input type="button" class="deleteNote" value="-"></li>
+            <%})%>
+        </ul>
     </div>
     <div class="textEditor">
         <h1 class="identificationNumber">1</h1>
@@ -35,12 +35,105 @@
     const content = document.querySelector(".contents");
     const username = document.querySelector(".username");
     const identificationNumber = document.querySelector(".identificationNumber");
-    content.addEventListener("keydown",(res)=>{
-        console.log("content: ",content.value);
-        console.log("username: ",username.textContent);
-        console.log("identificationNumber: ",identificationNumber.textContent)
-        socket.emit("editing",{contents: content.value, username: username.textContent, identificationNumber: identificationNumber.textContent});
+    const nodeList = document.querySelector(".noteList");
+    const addNewNote = document.querySelector(".addNewNote");
+    let openNote = document.querySelectorAll(".openNote");
+    let deleteNote = document.querySelectorAll(".deleteNote");
 
+    addNewNote.addEventListener("click",(res)=>{
+        createNewNote();
+        getNoteList();
     })
+    
+    content.addEventListener("keydown",(res)=>{
+        // console.log("content: ",content.value);
+        // console.log("username: ",username.textContent);
+        // console.log("identificationNumber: ",identificationNumber.textContent)
+        saveContentToDataBase(res.target.value);
+    }) 
+
+    function saveContentToDataBase(contents){
+        const data = {
+            username: getUsername(),
+            identificationNumber: getIdentificationNumber(),
+            contents: contents
+        }
+        socket.emit("updateContents",data);
+    }
+    function getLastNoteID(){
+        const list = nodeList.getElementsByTagName("li");
+        return list[list.length-1].firstChild.value;
+    }
+    function createListItem(identificationNumber){
+        const listItem = document.createElement("li");
+        const editNoteButton = document.createElement("input");
+        const deleteNoteButton = document.createElement("input");
+        editNoteButton.type = "button";
+        editNoteButton.value = identificationNumber;
+        editNoteButton.className = "editNote";
+        deleteNoteButton.type = "button";
+        deleteNoteButton.className = "deleteNote";
+        listItem.appendChild(editNoteButton);
+        listItem.appendChild(deleteNoteButton);
+        editNoteButton.addEventListener("click",(res)=>{
+            const data = {
+                username: getUsername(),
+                identificationNumber: identificationNumber
+            }
+            socket.emit("",data);
+        })
+        deleteNoteButton.addEventListener("click",(res)=>{
+            const data = {
+                username: getUsername(),
+                identificationNumber: identificationNumber
+            }
+            socket.emit("",data);
+        })
+        return listItem;
+    }
+    function createList(identificationNumbers){
+        identificationNumbers.forEach((number)=>{
+            const listItem = createListItem(number);
+            nodeList.appendChild(listItem);
+        })
+    }
+    function removeList(){
+        while(nodeList.lastChild){
+            nodeList.removeChild(nodeList.lastChild);
+        }
+    }
+    function changeIdentificationNumberDisplay(id){
+        identificationNumber.textContent = id;
+    }
+    function getIdentificationNumber(){
+        return identificationNumber.textContent;
+    }
+    function getUsername(){
+        return username.textContent;
+    }
+    function refreshingList(identificationNumbers){
+        removeList();
+        createList(identificationNumbers);
+    }
+    // Refreshing Note List 
+    function getNoteList(){
+        const data = {username: getUsername()};
+        socket.emit("getNoteList",data);
+    }
+    function createNewNote(){
+        const data = {
+            username: getUsername(),
+            identificationNumber: String(parseInt(getLastNoteID())+1),
+            contents: "Add something here!"
+        };
+        console.log(data)
+        socket.emit("newNote",data);
+    }
+    socket.on("recievingNoteList",(list)=>{
+        refreshingList(list);
+    })
+
+    
+
 </script>
 </html>

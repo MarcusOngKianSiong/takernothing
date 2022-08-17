@@ -8,7 +8,11 @@ authentication.post('/login',(req,res)=>{
     const password = req.body.password;
     accountData.find({username: username, password: password},(error,data)=>{
         if(data.length !== 0){
-            res.render('display.ejs');
+            notesData.find({username: username},(error,data)=>{
+                res.render('display.ejs',{
+                    list: data
+                })
+            })
         }else{
             res.render('login.ejs');
         }
