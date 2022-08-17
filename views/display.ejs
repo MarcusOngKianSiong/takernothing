@@ -31,6 +31,7 @@
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script>
+
     const socket = io();
     const content = document.querySelector(".contents");
     const username = document.querySelector(".username");
@@ -42,7 +43,9 @@
 
     addNewNote.addEventListener("click",(res)=>{
         createNewNote();
-        getNoteList();
+        setTimeout(() => {
+            getNoteList();    
+        }, 100);
     })
     
     content.addEventListener("keydown",(res)=>{
@@ -73,6 +76,7 @@
         editNoteButton.className = "editNote";
         deleteNoteButton.type = "button";
         deleteNoteButton.className = "deleteNote";
+        deleteNoteButton.value = "-";
         listItem.appendChild(editNoteButton);
         listItem.appendChild(deleteNoteButton);
         editNoteButton.addEventListener("click",(res)=>{
@@ -115,7 +119,8 @@
         removeList();
         createList(identificationNumbers);
     }
-    // Refreshing Note List 
+
+    // Refreshing Note List
     function getNoteList(){
         const data = {username: getUsername()};
         socket.emit("getNoteList",data);
@@ -123,7 +128,6 @@
     function createNewNote(){
         const data = {
             username: getUsername(),
-            identificationNumber: String(parseInt(getLastNoteID())+1),
             contents: "Add something here!"
         };
         console.log(data)
@@ -133,7 +137,5 @@
         refreshingList(list);
     })
 
-    
- 
 </script>
 </html>

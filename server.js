@@ -26,20 +26,22 @@ app.get('/logout',(req,res)=>{
 // display sidebar
 io.on("connection",(socket)=>{
     console.log("connection established.....");
-
-
+    
     socket.on("getNoteList",(data)=>{
         const list = [];
         notesData.find(data,(err,notes)=>{
             notes.forEach((note)=>{
                 list.push(note.identificationNumber);
             })
-            socket.emit("recievingNoteList",list)
+            socket.emit("recievingNoteList",list);    
         })
     })
 
     socket.on("newNote",(data)=>{
-        notesData.create(data);
+        notesData.find({},(err,noteList)=>{
+            data["identificationNumber"] = noteList.length+1;
+            notesData.create(data);
+        })
     })
 
     socket.on("editing",async (items)=>{
