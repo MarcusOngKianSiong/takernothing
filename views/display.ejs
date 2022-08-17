@@ -13,9 +13,7 @@
         </form>
         <input type="button" class="addNewNote" value="+">
         <ul class="noteList">
-            <%list.forEach((note)=>{%>
-                <li><input type="button" class="openNote" value="<%=note.identificationNumber%>"><input type="button" class="deleteNote" value="-"></li>
-            <%})%>
+            
         </ul>
     </div>
     <div class="textEditor">
@@ -31,7 +29,7 @@
 </body>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-
+    
     const socket = io();
     const content = document.querySelector(".contents");
     const username = document.querySelector(".username");
@@ -40,14 +38,14 @@
     const addNewNote = document.querySelector(".addNewNote");
     let openNote = document.querySelectorAll(".openNote");
     let deleteNote = document.querySelectorAll(".deleteNote");
-
+    
     addNewNote.addEventListener("click",(res)=>{
         createNewNote();
         setTimeout(() => {
             getNoteList();    
         }, 100);
     })
-    
+
     content.addEventListener("keydown",(res)=>{
         // console.log("content: ",content.value);
         // console.log("username: ",username.textContent);
@@ -55,13 +53,20 @@
         saveContentToDataBase(res.target.value);
     }) 
 
+    function getContents(identificationNumber){
+        socket.emit("askingForContents",{username: getUsername(),identificationNumber: identificationNumber})
+    }
+    function initialisation(){
+        getNoteList();
+        getContents("1")
+    }
     function saveContentToDataBase(contents){
         const data = {
             username: getUsername(),
             identificationNumber: getIdentificationNumber(),
             contents: contents
         }
-        socket.emit("updateContents",data);
+        socket.emit("editingContents",data);
     }
     function getLastNoteID(){
         const list = nodeList.getElementsByTagName("li");
@@ -84,14 +89,15 @@
                 username: getUsername(),
                 identificationNumber: identificationNumber
             }
-            socket.emit("",data);
+            changeIdentificationNumberDisplay(data.identificationNumber);
+            socket.emit("askingForContents",data);
         })
         deleteNoteButton.addEventListener("click",(res)=>{
             const data = {
                 username: getUsername(),
                 identificationNumber: identificationNumber
             }
-            socket.emit("",data);
+            socket.emit("deletingNote",data);
         })
         return listItem;
     }
@@ -119,6 +125,9 @@
         removeList();
         createList(identificationNumbers);
     }
+    function changeContentsInTextArea(contents){
+        content.value = contents;
+    }
 
     // Refreshing Note List
     function getNoteList(){
@@ -136,6 +145,24 @@
     socket.on("recievingNoteList",(list)=>{
         refreshingList(list);
     })
+
+    socket.on("sendingContents",(contents)=>{
+        changeContentsInTextArea(contents.contents);
+        changeIdentificationNumberDisplay(contents.identificationNumber);
+    })
+
+    socket.on("changeIdentificationNumber",(identificationNumberDeleted)=>{
+        socket.emit("changeIdentificationNumber",identificationNumberDeleted)
+    })
+
+    socket.on("afterDeletingNote",(list)=>{
+        refreshingList(list);
+        changeIdentificationNumberDisplay("1");
+        console.log(list)
+        getContents(list[0]);
+    })
+
+    initialisation(); 
 
 </script>
 </html>

@@ -8,7 +8,7 @@ const db = mongoose.connection;
 
 // Schemas
 const accountDataSchema = {username: String,password: String};
-const notesDataSchema = {username: String, name: String, identificationNumber: String, contents: String};
+const notesDataSchema = {username: String, identificationNumber: String, contents: String};
 
 const notes = mongoose.model('note',notesDataSchema);
 const account = mongoose.model('account',accountDataSchema); 

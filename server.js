@@ -10,6 +10,7 @@ const server = http.createServer(app);
 const {Server} = require("socket.io");
 const { SocketAddress } = require("net");
 const { gunzipSync } = require("zlib");
+const { captureRejectionSymbol } = require("events");
 const io = new Server(server);
 
 app.use(express.urlencoded({ extended: false }));
@@ -22,6 +23,31 @@ app.get('/',(req,res)=>{
 app.get('/logout',(req,res)=>{
     res.render('login.ejs')
 })
+
+function createOneUpdateScript(originalData){
+    return {
+        updateOne: {
+            "filter": {
+                username: originalData.username,
+                identificationNumber: originalData.identificationNumber
+            },
+            "update": {
+                username: originalData.username,
+                identificationNumber: originalData.identificationNumber-1,
+                contents: originalData.contents
+            }
+        }
+    }
+}
+function createMultipleUpdateScript(noteList,deletedIdentificationNumber){
+    let updateList = []
+    noteList.forEach((note)=>{
+        if(note.identificationNumber > deletedIdentificationNumber){
+            updateList.push(createOneUpdateScript(note));
+        }
+    })
+    return updateList;
+}
 
 // display sidebar
 io.on("connection",(socket)=>{
@@ -43,6 +69,47 @@ io.on("connection",(socket)=>{
             notesData.create(data);
         })
     })
+
+    socket.on("askingForContents",(data)=>{
+        notesData.find(data,(err,noteList)=>{
+            socket.emit("sendingContents",noteList[0]);
+        })
+    })
+
+    socket.on("deletingNote",(data)=>{
+        const identificationNumberToBeDeleted = parseInt(data.identificationNumber);
+        notesData.deleteOne(data,(err)=>{
+            socket.emit("changeIdentificationNumber",identificationNumberToBeDeleted);
+            // Redefine the identification numbers
+        })
+    })
+
+    socket.on("changeIdentificationNumber",(deletedIdentificationNumber)=>{
+        notesData.find({},(err,data)=>{
+            const updateScripts = createMultipleUpdateScript(data,deletedIdentificationNumber);
+            notesData.bulkWrite(updateScripts);
+        })
+        // send the data to the from end to refine the list again
+        setTimeout(() => {
+            notesData.find({},(err,noteList)=>{
+                console.log(noteList)
+                const identificationNumbers = [];
+                noteList.forEach((note)=>{
+                    identificationNumbers.push(note.identificationNumber);
+                })
+                socket.emit("afterDeletingNote",identificationNumbers);
+            });
+        }, 100);
+        
+        // When you change all the number, the current note number has to change as well. 
+    })
+
+    socket.on("editingContents",async (data)=>{
+        console.log(data)
+        await notesData.findOneAndUpdate({username: data.username,identificationNumber: data.identificationNumber}, {contents: data.contents});
+    })
+
+
 
     socket.on("editing",async (items)=>{
         console.log("--------------------")
@@ -81,13 +148,13 @@ io.on("connection",(socket)=>{
     socket.on("deleteNote",(metaData)=>{
         console.log("deleting data: ",metaData);
         notesData.deleteOne(metaData, async (err)=>{
-            const deletedIdentificationNumber = metaData.identificationNumber
+            const deletedIdentificationNumber = metaData.identificationNumber;
             const user = metaData.username;
-            notesData.find({username: user},(err,data)=>{
+            notesData.find({username: user},(err,data)=>{ 
                 // Any identification number above deletedIdentificationNumber should be reduced by 1
                 data.forEach((note)=>{
                     if(note.identificationNumber > deletedIdentificationNumber){
-                        notesData.findOneAndUpdate({username: note.username, identificationNumber: note.identificationNumber},{identificationNumber: note.identificationNumber-1})
+                        notesData.updateOne({username: note.username, identificationNumber: note.identificationNumber},{identificationNumber: note.identificationNumber-1})
                     }
                 }) 
                 notesData.find({username: user},(err,data)=>{
