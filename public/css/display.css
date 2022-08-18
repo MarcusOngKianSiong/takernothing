@@ -1,0 +1,61 @@
+.sidebar, .textEditor{
+    border: 1px solid red;
+}
+body{
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+}
+.sidebar{
+    width: 50%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+.sidebarHeader{
+    display: flex;
+    flex-direction: row;
+}
+.sidebarHeader *{
+    width: 50%;
+    border: 1px solid blue;
+}
+.logout{
+    width: 100%;
+}
+.noteList{
+    border: 1px solid red;
+    height: 90%;
+    list-style: none;
+    padding: 0;
+}
+.noteList *{
+    border: 1px solid blue;
+    display: flex;
+    justify-content: space-evenly;
+}
+.noteList * *{
+    width: 100%;
+    margin: 1%;
+}
+.textEditor{
+    width: 50%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.header{
+    display: flex;
+    flex-direction: row;
+}
+.header *{
+    width: 50%;
+    border: 1px solid blue;
+    text-align: center;
+}
+.contents{
+    height: 100%;
+}

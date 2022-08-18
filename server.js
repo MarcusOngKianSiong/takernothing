@@ -13,6 +13,7 @@ const { gunzipSync } = require("zlib");
 const { captureRejectionSymbol } = require("events");
 const io = new Server(server);
 
+app.use(express.static('public'))
 app.use(express.urlencoded({ extended: false }));
 app.use('/',authentication);
 
