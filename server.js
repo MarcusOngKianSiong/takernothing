@@ -64,6 +64,7 @@ io.on("connection",(socket)=>{
     })
 
     socket.on("newNote",(data)=>{
+        console.log("CREATING NEW NOTE!!!!")
         notesData.find({},(err,noteList)=>{
             data["identificationNumber"] = noteList.length+1;
             notesData.create(data);
