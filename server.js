@@ -100,7 +100,7 @@ io.on("connection",(socket)=>{
                 })
                 socket.emit("afterDeletingNote",identificationNumbers);
             });
-        }, 100);
+        }, 500);
         
         // When you change all the number, the current note number has to change as well. 
     })

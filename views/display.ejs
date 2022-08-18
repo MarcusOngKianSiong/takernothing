@@ -150,7 +150,7 @@
     })
 
     socket.on("changeIdentificationNumber",(identificationNumberDeleted)=>{
-        socket.emit("changeIdentificationNumber",identificationNumberDeleted)
+        socket.emit("changeIdentificationNumber",identificationNumberDeleted); 
     })
 
     socket.on("afterDeletingNote",(list)=>{
