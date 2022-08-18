@@ -1,6 +1,7 @@
 .sidebar, .textEditor{
     border: 1px solid red;
 }
+
 body{
     width: 100vw;
     height: 100vh;
@@ -18,10 +19,17 @@ body{
 .sidebarHeader{
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
 }
 .sidebarHeader *{
     width: 50%;
     border: 1px solid blue;
+}
+
+.addNewNote{
+    width: 5%;
+    border-radius: 15%;
+    margin: 2%;
 }
 .logout{
     width: 100%;
@@ -58,4 +66,7 @@ body{
 }
 .contents{
     height: 100%;
+}
+input:hover{
+    background-color: grey;
 }
